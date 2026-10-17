@@ -1,0 +1,215 @@
+// Prisma schema for DineDesk - Restaurant Ordering Platform
+// Suitable for PostgreSQL database connection
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  STAFF
+  ADMIN
+}
+
+enum OrderType {
+  DINE_IN
+  TAKEAWAY
+  DELIVERY
+}
+
+enum OrderStatus {
+  ORDER_PLACED
+  CONFIRMED
+  PREPARING
+  READY
+  SERVED_OUT_FOR_DELIVERY
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  PAY_AT_RESTAURANT
+}
+
+enum PaymentMethod {
+  ONLINE
+  CASH_ON_DELIVERY
+  PAY_AT_RESTAURANT
+}
+
+enum TableStatus {
+  AVAILABLE
+  RESERVED
+  OCCUPIED
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+model User {
+  id           Int           @id @default(autoincrement())
+  uid          String?       @unique
+  name         String
+  email        String        @unique
+  phone        String?
+  password     String?
+  role         Role          @default(CUSTOMER)
+  avatar       String?
+  orders       Order[]
+  reservations Reservation[]
+  createdAt    DateTime      @default(now()) @map("created_at")
+
+  @@map("users")
+}
+
+model Category {
+  id           Int        @id @default(autoincrement())
+  name         String
+  slug         String     @unique
+  description  String?
+  image        String?
+  displayOrder Int        @default(0) @map("display_order")
+  menuItems    MenuItem[]
+  createdAt    DateTime   @default(now()) @map("created_at")
+
+  @@map("categories")
+}
+
+model MenuItem {
+  id           Int         @id @default(autoincrement())
+  name         String
+  description  String
+  price        Float
+  categoryId   Int?        @map("category_id")
+  categoryName String?     @map("category_name")
+  isVeg        Boolean     @default(true) @map("is_veg")
+  isAvailable  Boolean     @default(true) @map("is_available")
+  rating       Float?      @default(4.6)
+  ratingCount  Int?        @default(18) @map("rating_count")
+  image        String
+  category     Category?   @relation(fields: [categoryId], references: [id])
+  orderItems   OrderItem[]
+  createdAt    DateTime    @default(now()) @map("created_at")
+
+  @@map("menu_items")
+}
+
+model RestaurantTable {
+  id           Int           @id @default(autoincrement())
+  tableNumber  String        @unique @map("table_number")
+  capacity     Int
+  location     String        @default("Main Dining Area")
+  status       TableStatus   @default(AVAILABLE)
+  reservations Reservation[]
+  createdAt    DateTime      @default(now()) @map("created_at")
+
+  @@map("restaurant_tables")
+}
+
+model Reservation {
+  id              Int               @id @default(autoincrement())
+  userId          Int?              @map("user_id")
+  customerName    String            @map("customer_name")
+  customerEmail   String            @map("customer_email")
+  customerPhone   String            @map("customer_phone")
+  tableId         Int?              @map("table_id")
+  tableNumber     String?           @map("table_number")
+  reservationDate String            @map("reservation_date")
+  timeSlot        String            @map("time_slot")
+  guestCount      Int               @default(2) @map("guest_count")
+  status          ReservationStatus @default(PENDING)
+  specialNotes    String?           @map("special_notes")
+  user            User?             @relation(fields: [userId], references: [id])
+  table           RestaurantTable?  @relation(fields: [tableId], references: [id])
+  createdAt       DateTime          @default(now()) @map("created_at")
+
+  @@map("reservations")
+}
+
+model Coupon {
+  id               Int          @id @default(autoincrement())
+  code             String       @unique
+  description      String
+  discountType     DiscountType @default(PERCENTAGE) @map("discount_type")
+  discountValue    Float        @map("discount_value")
+  minOrderAmount   Float?       @default(0) @map("min_order_amount")
+  maxDiscountAmount Float?     @map("max_discount_amount")
+  isActive         Boolean      @default(true) @map("is_active")
+  createdAt        DateTime     @default(now()) @map("created_at")
+
+  @@map("coupons")
+}
+
+model Order {
+  id              Int           @id @default(autoincrement())
+  orderNumber     String        @unique @map("order_number")
+  userId          Int?          @map("user_id")
+  customerName    String        @map("customer_name")
+  customerEmail   String        @map("customer_email")
+  customerPhone   String        @map("customer_phone")
+  orderType       OrderType     @default(DINE_IN) @map("order_type")
+  tableNumber     String?       @map("table_number")
+  deliveryAddress String?       @map("delivery_address")
+  subtotal        Float
+  discountAmount  Float         @default(0) @map("discount_amount")
+  taxAmount       Float         @map("tax_amount")
+  totalAmount     Float         @map("total_amount")
+  couponCode      String?       @map("coupon_code")
+  status          OrderStatus   @default(ORDER_PLACED)
+  paymentStatus   PaymentStatus @default(PENDING) @map("payment_status")
+  paymentMethod   PaymentMethod @default(ONLINE) @map("payment_method")
+  notes           String?
+  user            User?         @relation(fields: [userId], references: [id])
+  items           OrderItem[]
+  payments        Payment[]
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @default(now()) @updatedAt @map("updated_at")
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id         Int       @id @default(autoincrement())
+  orderId    Int       @map("order_id")
+  menuItemId Int?      @map("menu_item_id")
+  name       String
+  price      Float
+  quantity   Int
+  total      Float
+  image      String?
+  order      Order     @relation(fields: [orderId], references: [id])
+  menuItem   MenuItem? @relation(fields: [menuItemId], references: [id])
+
+  @@map("order_items")
+}
+
+model Payment {
+  id             Int      @id @default(autoincrement())
+  orderId        Int      @map("order_id")
+  transactionId  String   @map("transaction_id")
+  amount         Float
+  status         String   @default("SUCCESS")
+  paymentMethod  String   @map("payment_method")
+  paymentDetails String?  @map("payment_details")
+  order          Order    @relation(fields: [orderId], references: [id])
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@map("payments")
+}

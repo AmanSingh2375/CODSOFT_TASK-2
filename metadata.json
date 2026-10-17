@@ -1,0 +1,6 @@
+{
+  "name": "DineDesk – Restaurant Ordering Platform",
+  "description": "Full-stack restaurant management platform for digital menus, table reservations, online ordering, live order tracking, kitchen operations, and staff management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
