@@ -15,7 +15,6 @@ import tableRoutes from './src/server/routes/tableRoutes.ts';
 import couponRoutes from './src/server/routes/couponRoutes.ts';
 import paymentRoutes from './src/server/routes/paymentRoutes.ts';
 import dashboardRoutes from './src/server/routes/dashboardRoutes.ts';
-import archiver from 'archiver';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -46,39 +45,6 @@ async function startServer() {
       service: 'DineDesk API Server',
       timestamp: new Date().toISOString(),
     });
-  });
-
-  // Download project source code as a ZIP file
-  app.get('/api/download-zip', (_req, res) => {
-    res.attachment('dinedesk-restaurant-platform.zip');
-    res.setHeader('Content-Type', 'application/zip');
-
-    const archive = archiver('zip', {
-      zlib: { level: 9 },
-    });
-
-    archive.on('error', (err) => {
-      console.error('ZIP generation error:', err);
-      if (!res.headersSent) {
-        res.status(500).json({ error: err.message });
-      }
-    });
-
-    archive.pipe(res);
-
-    archive.glob('**/*', {
-      cwd: __dirname,
-      ignore: [
-        'node_modules/**',
-        'dist/**',
-        '.git/**',
-        '*.log',
-        '**/.DS_Store',
-      ],
-      dot: true,
-    });
-
-    archive.finalize();
   });
 
   if (!isProd) {

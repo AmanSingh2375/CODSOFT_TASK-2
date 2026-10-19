@@ -12,7 +12,6 @@ import {
   Menu as MenuIcon,
   X,
   ChevronDown,
-  Download,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.tsx';
 import { useCart } from '../context/CartContext.tsx';
@@ -83,16 +82,6 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate }) => {
             >
               Admin
             </button>
-
-            <a
-              href="/api/download-zip"
-              download="dinedesk-restaurant-platform.zip"
-              className="ml-2 px-2.5 py-0.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded flex items-center gap-1 text-[11px] shadow-xs transition-colors"
-              title="Download entire project code as .ZIP"
-            >
-              <Download className="w-3 h-3" />
-              Download ZIP
-            </a>
           </div>
         </div>
       </div>

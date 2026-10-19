@@ -1,5 +1,5 @@
 import React from 'react';
-import { UtensilsCrossed, Phone, Mail, MapPin, Clock, Heart, Award, ShieldCheck, Sparkles, Download } from 'lucide-react';
+import { UtensilsCrossed, Phone, Mail, MapPin, Clock, Heart, Award, ShieldCheck, Sparkles } from 'lucide-react';
 
 interface FooterProps {
   onNavigate: (view: string) => void;
@@ -81,15 +81,6 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                 >
                   Staff & Kitchen Portal
                 </button>
-              </li>
-              <li className="pt-2">
-                <a
-                  href="/api/download-zip"
-                  download="dinedesk-restaurant-platform.zip"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-lg text-xs font-bold hover:bg-amber-500/30 transition-colors"
-                >
-                  <Download className="w-3.5 h-3.5 text-amber-400" /> Download Full Project (.ZIP)
-                </a>
               </li>
             </ul>
           </div>
